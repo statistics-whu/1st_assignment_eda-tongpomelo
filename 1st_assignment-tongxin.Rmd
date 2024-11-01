@@ -4,10 +4,6 @@ CJKmainfont: Songti SC
 author: "童鑫"
 date: "2024-10-29"
 output:
-  pdf_document:
-    latex_engine: xelatex
-  word_document:
-    toc: yes
   html_document:
     code_folding: show
     fig_caption: yes
@@ -16,9 +12,13 @@ output:
     number_sections: yes
     theme: cosmo
     toc: yes
+  word_document:
+    toc: yes
+  pdf_document:
+    latex_engine: xelatex
 ---
-```{r setup, include = FALSE,echo = FALSE}
-knitr::opts_chunk$set(echo = FALSE,error = FALSE, warning = FALSE, message = FALSE,
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE,error = FALSE, warning = FALSE, message = FALSE,
                       out.width = "100%", split = FALSE, fig.align = "center")
 #load library
 library(tidyverse)
@@ -28,6 +28,8 @@ library(scales)
 library(plotly)
 library(patchwork)
 library(ggrepel)
+library(wordcloud2)
+library(jiebaR)
 ```
 
 # 你的主要发现
