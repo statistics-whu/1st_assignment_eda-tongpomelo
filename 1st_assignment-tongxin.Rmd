@@ -1,0 +1,196 @@
+---
+title: "第一次作业你的报告题目"
+CJKmainfont: Songti SC
+author: "童鑫"
+date: "2024-10-29"
+output:
+  html_document:
+    code_folding: show
+    fig_caption: yes
+    fig_width: 10
+    highlight: tango
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+  word_document:
+    toc: yes
+  pdf_document:
+    latex_engine: xelatex
+---
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE,error = FALSE, warning = FALSE, message = FALSE,
+                      out.width = "100%", split = FALSE, fig.align = "center")
+#load library
+library(tidyverse)
+library(kableExtra)
+library(lubridate)
+library(scales)
+library(plotly)
+library(patchwork)
+library(ggrepel)
+library(wordcloud2)
+library(jiebaR)
+```
+
+# 你的主要发现
+
+1. 房屋价格特征
+价格分布广泛：房屋价格跨度较大，从 10.6 万元到 1380万元不等。
+不过高价房屋数量相对较少，多数房屋价格集中在 100 万元至 300 万元之间。
+价格与区域相关：不同区域的房价存在明显差异。例如，武昌区的部分小区房价较高，如东湖 1 号、融科天城一期等；而一些远城区的房价相对较低，如阳逻、汉南等地的部分小区。
+
+2. 房屋属性特征
+房屋面积多样：房屋建筑面积从22.77平方米到588.66平方米不等，涵盖了各种户型。
+小户型房屋主要集中在老旧小区，中大户型房屋则多分布在新建小区或高端楼盘。
+房屋装修情况差异大：装修情况分为精装、毛坯、简装等多种类型。精装房屋数量较多，占比约为40%，这些房屋大多为次新房或品质较高的楼盘；毛坯房屋占比约为30%，主要分布在一些早期开发的小区；简装房屋占比较少，约为10%。
+  
+3. 房屋配套特征
+周边设施完善程度不同：部分小区周边配套设施齐全，如商场、超市、医院、学校等，生活便利性较高；而一些老旧小区周边配套设施相对薄弱，需要居民自行解决生活需求。
+交通便利性差异明显：房屋所在小区的交通便利性对房价有一定影响。靠近地铁、公交站点的小区，房价相对较高；而一些交通不便的小区，房价较低。
+    
+
+# 数据介绍
+
+本报告**链家**数据获取方式如下：
+    
+报告人在2023年9月12日获取了[链家武汉二手房网站](https://wh.lianjia.com/ershoufang/)数据。
+    
+- 链家二手房网站默认显示100页，每页30套房产，因此本数据包括3000套房产信息；
+    
+- 数据包括了页面可见部分的文本信息，具体字段及说明见作业说明。
+
+ **说明：**数据仅用于教学；由于不清楚链家数据的展示规则，因此数据可能并不是武汉二手房市场的随机抽样，结论很可能有很大的偏差，甚至可能是错误的。
+    
+```{r}
+# 载入数据和预处理
+
+lj<- read_csv("data/2023-09-12_cleaned.csv")
+# EDA ---------------------------------------------------------------------
+
+## 如下语句可以解决画图中的中文显示问题，当然你可以用showtext包来解决
+
+theme_set(theme(text = element_text(family="Songti SC",size = 10))) #这里family设置成你系统中的中文字体名。
+
+# 做一些数据预处理，比如把字符型变成factor。
+
+```
+
+# 数据概览
+
+数据表（lj)共包括`r names(lj)`等`r ncol(lj)`个变量,共`r nrow(lj)`行。表的前10行示例如下：
+
+```{r}
+lj %>% 
+  head(10) 
+```
+
+各变量的简短信息：
+```{r}
+glimpse(lj)
+```
+
+各变量的简短统计：
+```{r}
+summary(lj)
+```
+
+可以看到：
+
+# 探索性分析
+
+### 变量1的数值描述与图形
+```{r}
+# 变量1：房屋价格的探索分析
+## 数值描述
+print("房屋价格的数值描述：")
+print(summary(lj$price_ttl))
+
+## 图形绘制
+# 绘制价格直方图
+ggplot(lj, aes(price_ttl)) +
+    geom_histogram(bins = 30, color = "black", fill = "lightblue") +
+    ggtitle("房屋价格直方图") +
+    xlab("价格（万元）") +
+    ylab("频率")
+
+# 做个小区名称的词云图
+lj$property_name <- as.character(lj$property_name)
+wordcloud2(freq(segment(lj$property_name,worker())))
+
+```
+
+```{r}
+# 变量2：房屋建筑面积的探索分析
+## 数值描述
+print("房屋建筑面积的数值描述：")
+print(summary(lj$building_area))
+
+## 图形绘制
+# 绘制建筑面积直方图
+ggplot(lj, aes(building_area)) +
+    geom_histogram(bins = 30, color = "black", fill = "pink") +
+    ggtitle("房屋建筑面积直方图") +
+    xlab("建筑面积（平方米）") +
+    ylab("频率")
+
+# 绘制散点图分析建筑面积与价格的关系
+ggplot(lj, aes(building_area, price_ttl)) +
+    geom_point(color = "red") +
+    geom_smooth(method = "lm", se = FALSE) +
+    ggtitle("建筑面积与价格的散点图") +
+    xlab("建筑面积（平方米）") +
+    ylab("价格（万元）")
+```
+
+```{r}
+# 变量3：房屋装修情况的探索分析
+## 数值描述
+print("房屋装修情况的数值描述：")
+print(table(lj$decoration))
+
+## 图形绘制
+# 绘制装修类型的柱状图
+ggplot(lj, aes(decoration)) +
+    geom_bar(fill = "orange") +
+    ggtitle("装修类型分布柱状图") +
+    xlab("装修情况") +
+    ylab("数量")+
+    geom_text(stat = "count", aes(label = after_stat(count)))
+
+# 分组分析不同装修程度的房屋价格
+ggplot(lj, aes(decoration, price_ttl)) +
+    geom_boxplot(color = "black", fill = "yellow") +
+    ggtitle("不同装修程度的房屋价格箱线图") +
+    xlab("装修情况") +
+    ylab("价格（万元）")
+```
+
+
+```{r}
+# 探索问题1：不同区域的房价差异原因
+
+## 供需关系分析
+print("不同区域的供需关系分析：")
+# 可以通过计算每个区域的房屋供应数量和需求数量来进行分析，这里假设没有明确的需求数据，仅作示例
+region_supply <- lj %>%
+    group_by(property_region) %>%
+    summarize(supply = n())%>%
+    arrange(desc(supply))%>%
+    head(15)
+region_supply_join <- region_supply %>%
+        left_join(lj, by = "property_region")
+region_supply_join
+# 绘制每个区域的箱线图
+ggplot(region_supply_join, aes(x = property_region, y = price_ttl)) +
+    geom_boxplot(color = "black", fill = "lightblue") +
+    ggtitle("前15个区域的平均房价箱线图") +
+    xlab("区域") +
+    ylab("平均价格（万元）")
+
+```
+
+
+###发现总结
+#通过上面的箱线图能够发现，供应量最多的15个区域中，价格中位数最高的是积玉桥区域，最低的是阳逻地区。
+
+
